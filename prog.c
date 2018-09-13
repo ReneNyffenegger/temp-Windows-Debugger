@@ -6,42 +6,41 @@
 
 
 int dispatchDebugEvent(const DEBUG_EVENT* debugEvent) {
-    printf("dispatchDebugEvent\n");
     switch (debugEvent->dwDebugEventCode) {
     case CREATE_PROCESS_DEBUG_EVENT:
-        // TBD
+        printf("CREATE_PROCESS_DEBUG_EVENT\n");
         break;
 
     case CREATE_THREAD_DEBUG_EVENT:
-        // TBD
+        printf("CREATE_THREAD_DEBUG_EVENT\n");
         break;
 
     case EXCEPTION_DEBUG_EVENT:
-        // TBD
+//      printf("EXCEPTION_DEBUG_EVENT\n");
         break;
 
     case EXIT_PROCESS_DEBUG_EVENT:
-        // TBD
+        printf("EXIT_PROCESS_DEBUG_EVENT\n");
         break;
 
     case EXIT_THREAD_DEBUG_EVENT:
-        // TBD
+        printf("EXIT_THREAD_DEBUG_EVENT\n");
         break;
 
     case LOAD_DLL_DEBUG_EVENT:
-        // TBD
+        printf("LOAD_DLL_DEBUG_EVENT\n");
         break;
 
     case UNLOAD_DLL_DEBUG_EVENT:
-        // TBD
+        printf("UNLOAD_DLL_DEBUG_EVENT\n");
         break;
 
     case OUTPUT_DEBUG_STRING_EVENT:
-        // TBD
+        printf("OUTPUT_DEBUG_STRING_EVENT\n");
         break;
 
     case RIP_EVENT:
-        // TBD
+        printf("RIP_EVENT\n");
         break;
 
     default:
@@ -61,9 +60,13 @@ void debug_loop() {
 
   while (WaitForDebugEvent(&debugEvent, INFINITE)) {
       DWORD debuggeeprocessID = debugEvent.dwProcessId;
-      DWORD debuggeethreadID = debugEvent.dwThreadId;
+      DWORD debuggeethreadID  = debugEvent.dwThreadId;
+
       if (dispatchDebugEvent(&debugEvent)) {
-          ContinueDebugEvent(debuggeeprocessID, debuggeethreadID, DBG_CONTINUE);
+          if (!ContinueDebugEvent(debuggeeprocessID, debuggeethreadID, DBG_CONTINUE)) {
+            printf("ContinueDebugEvent returned false!\n");
+            exit(-1);
+          }
       }
       else {
           break;
