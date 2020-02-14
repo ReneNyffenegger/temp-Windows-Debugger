@@ -58,6 +58,7 @@ int dispatchDebugEvent(const DEBUG_EVENT* debugEvent) {
 
     case EXIT_PROCESS_DEBUG_EVENT:
         printf("EXIT_PROCESS_DEBUG_EVENT\n");
+        return 0;
         break;
 
     case EXIT_THREAD_DEBUG_EVENT:
@@ -106,7 +107,9 @@ void debug_loop() {
           }
       }
       else {
-          break;
+         printf("! dispatchDebugEvent\n");
+          return;
+//        break;
       }
   }
 
@@ -136,7 +139,8 @@ int _tmain() {
 
     // Start the child process.
     if( !CreateProcess(
-       "C:\\Program Files\\Microsoft Office\\Office14\\EXCEL.EXE",             // Module
+       "debuggee.exe"                                            ,             // Module
+//     "C:\\Program Files\\Microsoft Office\\Office14\\EXCEL.EXE",             // Module
         NULL,                                                                  // Command line
         NULL,                                       //&saPrc,                  // Process handle not inheritable
         NULL,                                       //&saThr,                  // Thread handle not inheritable
@@ -151,14 +155,18 @@ int _tmain() {
         printf( "CreateProcess failed (%d).\n", GetLastError() );
         return (0);
     }
-    printf("xxx\n");
 
+    printf("Enter debug loop\n");
     debug_loop();
 
  // Wait until child process exits.
-    WaitForSingleObject( pi.hProcess, INFINITE );
+    printf("Wait until child process exits.\n");
+//  WaitForSingleObject( pi.hProcess, INFINITE );
 
  // Close process and thread handles.
+    printf("Close handle process\n");
     CloseHandle( pi.hProcess );
+    printf("Close handle thread\n");
     CloseHandle( pi.hThread );
+    printf("The end.\n");
 }
