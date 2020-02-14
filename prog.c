@@ -136,16 +136,16 @@ int _tmain() {
 
     // Start the child process.
     if( !CreateProcess(
-       "C:\\Program Files\\Microsoft Office\\Office14\\EXCEL.EXE",             // Moudle
-       NULL, // "C:\\Program Files\\Microsoft Office\\Office14\\EXCEL.EXE",             // Command line
-       NULL,//&saPrc,                  // Process handle not inheritable
-       NULL,//&saThr,                  // Thread handle not inheritable
-        FALSE,                  // Set handle inheritance to FALSE
+       "C:\\Program Files\\Microsoft Office\\Office14\\EXCEL.EXE",             // Module
+        NULL,                                                                  // Command line
+        NULL,                                       //&saPrc,                  // Process handle not inheritable
+        NULL,                                       //&saThr,                  // Thread handle not inheritable
+        FALSE,                                                                 // Set handle inheritance to FALSE
         DEBUG_ONLY_THIS_PROCESS | CREATE_NEW_CONSOLE,
-        NULL,                   // Use parent's environment block
-        NULL,                   // Use parent's starting directory
-        &si,                    // Pointer to STARTUPINFO structure
-        &pi )                   // Pointer to PROCESS_INFORMATION structure
+        NULL,                                                                  // Use parent's environment block
+        NULL,                                                                  // Use parent's starting directory
+        &si,                                                                   // Pointer to STARTUPINFO structure
+        &pi )                                                                  // Pointer to PROCESS_INFORMATION structure
     )
     {
         printf( "CreateProcess failed (%d).\n", GetLastError() );
@@ -155,10 +155,10 @@ int _tmain() {
 
     debug_loop();
 
-    // Wait until child process exits.
+ // Wait until child process exits.
     WaitForSingleObject( pi.hProcess, INFINITE );
 
-    // Close process and thread handles.
+ // Close process and thread handles.
     CloseHandle( pi.hProcess );
     CloseHandle( pi.hThread );
 }
