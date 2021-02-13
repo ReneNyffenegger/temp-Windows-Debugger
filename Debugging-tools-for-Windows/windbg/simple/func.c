@@ -98,11 +98,23 @@
 
 
 int func_leave() {
-
-
+    return 99;
 }
 
-int func(const char* filename, int number) {
+int func(
+     unsigned long long addr_last_var_caller,
+     unsigned long long addr_caller,
+     const char* filename,
+     int number) {
+
+
+   unsigned long long addr_last_parameter  = (unsigned long long) &number;
+   unsigned long long addr_2nd_last_param  = (unsigned long long) &filename;
+   unsigned long long ret_addr             = (unsigned long long) *((unsigned long long*) addr_last_parameter + 8);
+
+   printf("func: addr_last_var_caller - addr_last_parameter: %llu\n", addr_last_var_caller - addr_last_parameter);
+   printf("func: addr_last_parameter  - addr_2nd_last_param: %llu\n", addr_last_parameter  - addr_2nd_last_param);
+   printf("func: ret_addr             - addr_caller        : %llu\n", ret_addr             - addr_caller        );
 
    FILE* f = fopen(filename, "w");
    int charactersWritten = fprintf(f, "The number is %d\n", number);
@@ -110,6 +122,6 @@ int func(const char* filename, int number) {
 
    MessageBox(0, "done", "message", 0);
 
-   return charactersWritten;
+   return charactersWritten * func_leave();
 
 }
