@@ -28,14 +28,84 @@ void print(const char* text, unsigned int len) {
 }
 
 
+
+typedef union {
+
+   LPARAM value;
+   struct {
+      unsigned repeat_count       : 16;
+      unsigned scan_code          :  8;
+      unsigned extended_key       :  1;
+      unsigned reserved           :  4;
+      unsigned context_code       :  1; // Always 0 for WM_KEYDOWN
+      unsigned previous_key_state :  1;
+      unsigned transition_state   :  1; // Always 0 for WM_KEYDOWN
+   } keydown_keyup_char; // WM_KEYDOWN, WM_KEYUP, WM_CHAR
+
+} lparam;
+
+typedef union {
+  WPARAM value;
+  struct {
+    WPARAM virtual_key_code;
+  } keydown_keyup; // WM_KEYDOWN, WM_KEYUP (But not WM_CHAR!)
+  struct {
+    WPARAM character_code;
+  } char_; // WM_CHAR
+  
+
+} wparam;
+
+typedef struct {
+  HWND   hwnd;
+  UINT   message;
+  wparam wParam;
+//WPARAM wParam;
+//LPARAM lParam;
+  lparam lParam;
+  DWORD  time;
+  POINT  pt;
+  DWORD  lPrivate;
+} win_msg;
+
+
 LRESULT CALLBACK WndProc (
     HWND   hWnd,
     UINT   msg,
-    WPARAM wParam,
-    LPARAM lParam ) {
+//  WPARAM wParam,
+    wparam wParam,
+//  LPARAM lParam
+    lparam lParam
+    ) {
 
   indent ++;
-  print("called back", 11);
+
+
+  char buf[200];
+  int len;
+
+  if (msg == WM_CHAR) {
+
+     len = wsprintfA(buf, "win proc, %s: scan code: %d, character code code: %d, repeat count: %d",
+        WM_to_text(msg),
+        lParam.keydown_keyup_char.scan_code,
+        wParam.char_.character_code,
+        lParam.keydown_keyup_char.repeat_count
+      );
+
+     print(buf, len);
+  }
+  else {
+     len = wsprintfA(buf, "win proc, %s (%d, %d)", WM_to_text(msg), wParam.value, lParam.value);
+     print(buf, len);
+  }
+
+
+
+//len = wsprintfA(buf, "sizeof(WPARAM) = %d", sizeof(WPARAM));
+//print(buf, len);
+//len = wsprintfA(buf, "sizeof(LPARAM) = %d", sizeof(LPARAM));
+//print(buf, len);
   switch (msg) {
     case WM_PAINT: {
 
@@ -52,7 +122,7 @@ LRESULT CALLBACK WndProc (
 
     default:
       indent --;
-      return DefWindowProc( hWnd, msg, wParam, lParam);
+      return DefWindowProc( hWnd, msg, wParam.value, lParam.value);
   } 
   indent --;
   return 0;
@@ -62,7 +132,7 @@ ULONG __stdcall start(void* PEB) {
 
 
    stdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-   print("started\n", 9);
+   print("started", 8);
 
 
 // HINSTANCE   __ImageBase = GetModuleHandleA(NULL);
@@ -100,15 +170,36 @@ ULONG __stdcall start(void* PEB) {
 
    ShowWindow(hWnd, SW_SHOWDEFAULT);
 
-   MSG msg;
+   win_msg msg;
+// MSG msg;
    int r;
 
-   while ((r = GetMessageA(&msg, NULL, 0, 0 )) != 0) { 
+   while ((r = GetMessageA((LPMSG) &msg, NULL, 0, 0 )) != 0) { 
      indent ++;
 
      char buf[200];
-     int len = wsprintfA(buf, "got message %s (%d, %d)", WM_to_text(msg.message), msg.wParam, msg.lParam);
-     print(buf, len);
+     int len;
+
+     if (msg.message == WM_KEYDOWN || msg.message == WM_KEYUP) {
+        len = wsprintfA(buf, "%s: scan code: %d, virtual key code: %d, repeat count: %d",
+            WM_to_text(msg.message),
+            msg.lParam.keydown_keyup_char.scan_code,
+            msg.wParam.keydown_keyup.virtual_key_code,
+            msg.lParam.keydown_keyup_char.repeat_count);
+        print(buf, len);
+     }
+     else if (msg.message == WM_CHAR) {
+        len = wsprintfA(buf, "%s: scan code: %d, character code: %d, repeat count: %d",
+            WM_to_text(msg.message),
+            msg.lParam.keydown_keyup_char.scan_code,
+            msg.wParam.char_.character_code,
+            msg.lParam.keydown_keyup_char.repeat_count);
+        print(buf, len);
+     }
+     else {
+         len = wsprintfA(buf, "got message %s (%d, %d)", WM_to_text(msg.message), msg.wParam, msg.lParam);
+         print(buf, len);
+      }
 
      if (r == -1) {
 
@@ -116,8 +207,12 @@ ULONG __stdcall start(void* PEB) {
        return 1;// Error!
      }
      else {
-       TranslateMessage(&msg); 
-       DispatchMessage (&msg); 
+       indent++;
+       print("TranslateMessage", 16);
+       TranslateMessage((LPMSG) &msg); 
+       print("DispatchMessage" , 15);
+       DispatchMessage ((LPMSG) &msg); 
+       indent--;
      }
      indent --;
    } 
