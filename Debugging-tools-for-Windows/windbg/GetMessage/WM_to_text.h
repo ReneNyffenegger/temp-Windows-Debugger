@@ -252,9 +252,8 @@ XMSGITEM xmsglist[] = {
   {  309, "WM_CTLCOLORBTN" },
   {  310, "WM_CTLCOLORDLG" },
   {  311, "WM_CTLCOLORSCROLLBAR" },
-  {  312, "WM_CTLCOLORSTATIC" },
-  {  512, "WM_MOUSEFIRST" },
-  {  512, "WM_MOUSEMOVE" },
+  {  312, "WM_CTLCOLORSTATIC"    },
+  {  512, "WM_MOUSEMOVE"         },                // WM_MOUSEFIRST
   {  513, "WM_LBUTTONDOWN" },
   {  514, "WM_LBUTTONUP" },
   {  515, "WM_LBUTTONDBLCLK" },
@@ -263,8 +262,7 @@ XMSGITEM xmsglist[] = {
   {  518, "WM_RBUTTONDBLCLK" },
   {  519, "WM_MBUTTONDOWN" },
   {  520, "WM_MBUTTONUP" },
-  {  521, "WM_MBUTTONDBLCLK" },
-  {  521, "WM_MOUSELAST" },
+  {  521, "WM_MBUTTONDBLCLK" },                   // WM_MOUSELAST
   {  522, "WM_MOUSEWHEEL" },
   {  523, "WM_XBUTTONDOWN" },
   {  524, "WM_XBUTTONUP" },
