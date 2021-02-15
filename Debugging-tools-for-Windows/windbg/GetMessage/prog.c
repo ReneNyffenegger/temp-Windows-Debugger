@@ -41,6 +41,14 @@ typedef union {
       unsigned previous_key_state :  1;
       unsigned transition_state   :  1; // Always 0 for WM_KEYDOWN
    } keydown_keyup_char; // WM_KEYDOWN, WM_KEYUP, WM_CHAR
+// struct {
+//    signed   short  x;  //  signed because negative values
+//    signed   short  y;  //  possible if multiple monitors connected.
+// }      mouse_move;
+   POINTS  mouse_move;
+   POINTS  nchittest;
+
+// POINTS nclbuttondown;
 
 } lparam;
 
@@ -84,7 +92,15 @@ LRESULT CALLBACK WndProc (
   char buf[200];
   int len;
 
-  if (msg == WM_CHAR) {
+  if (msg == WM_KEYDOWN || msg == WM_KEYUP) {
+        len = wsprintfA(buf, "win proc, %s: scan code: %d, virtual key code: %d, repeat count: %d",
+            WM_to_text(msg),
+            lParam.keydown_keyup_char.scan_code,
+            wParam.keydown_keyup.virtual_key_code,
+            lParam.keydown_keyup_char.repeat_count);
+        print(buf, len);
+     }
+  else if (msg == WM_CHAR) {
 
      len = wsprintfA(buf, "win proc, %s: scan code: %d, character code code: %d, repeat count: %d",
         WM_to_text(msg),
@@ -95,17 +111,22 @@ LRESULT CALLBACK WndProc (
 
      print(buf, len);
   }
+  else if (msg == WM_NCHITTEST) {
+
+     len = wsprintfA(buf, "win proc, %s: %d/%d",
+        WM_to_text(msg),
+        lParam.nchittest.x,
+        lParam.nchittest.y
+      );
+
+     print(buf, len);
+  }
   else {
      len = wsprintfA(buf, "win proc, %s (%d, %d)", WM_to_text(msg), wParam.value, lParam.value);
      print(buf, len);
   }
 
 
-
-//len = wsprintfA(buf, "sizeof(WPARAM) = %d", sizeof(WPARAM));
-//print(buf, len);
-//len = wsprintfA(buf, "sizeof(LPARAM) = %d", sizeof(LPARAM));
-//print(buf, len);
   switch (msg) {
     case WM_PAINT: {
 
@@ -181,7 +202,7 @@ ULONG __stdcall start(void* PEB) {
      int len;
 
      if (msg.message == WM_KEYDOWN || msg.message == WM_KEYUP) {
-        len = wsprintfA(buf, "%s: scan code: %d, virtual key code: %d, repeat count: %d",
+        len = wsprintfA(buf, "got msg, %s: scan code: %d, virtual key code: %d, repeat count: %d",
             WM_to_text(msg.message),
             msg.lParam.keydown_keyup_char.scan_code,
             msg.wParam.keydown_keyup.virtual_key_code,
@@ -189,15 +210,23 @@ ULONG __stdcall start(void* PEB) {
         print(buf, len);
      }
      else if (msg.message == WM_CHAR) {
-        len = wsprintfA(buf, "%s: scan code: %d, character code: %d, repeat count: %d",
+        len = wsprintfA(buf, "got msg, %s: scan code: %d, character code: %d, repeat count: %d",
             WM_to_text(msg.message),
             msg.lParam.keydown_keyup_char.scan_code,
             msg.wParam.char_.character_code,
             msg.lParam.keydown_keyup_char.repeat_count);
         print(buf, len);
      }
+     else if (msg.message == WM_MOUSEMOVE) {
+        len = wsprintfA(buf, "got msg, %s: %d/%d (%d)",
+            WM_to_text(msg.message),
+            msg.lParam.mouse_move.x,
+            msg.lParam.mouse_move.y,
+            msg.wParam.value);
+        print(buf, len);
+     }
      else {
-         len = wsprintfA(buf, "got message %s (%d, %d)", WM_to_text(msg.message), msg.wParam, msg.lParam);
+         len = wsprintfA(buf, "got msg, %s (%d, %d)", WM_to_text(msg.message), msg.wParam, msg.lParam);
          print(buf, len);
       }
 
